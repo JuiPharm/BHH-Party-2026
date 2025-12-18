@@ -1,0 +1,2098 @@
+
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Bangkok Hospital Hat Yai • Spin Wheel</title>
+
+  <style>
+    :root{
+      --brand-primary:  #1E376B;
+      --brand-secondary:#2A4D97;
+      --brand-accent:   #AA1F2B;
+      --muted:          #758193;
+
+      --ink:#0b1220;
+      --card: rgba(255,255,255,.92);
+      --glass: rgba(255,255,255,.12);
+      --glass2: rgba(255,255,255,.14);
+      --shadow: 0 14px 34px rgba(0,0,0,.18);
+      --shadow2: 0 8px 18px rgba(0,0,0,.14);
+      --radius: 16px;
+    }
+
+    *{ box-sizing:border-box; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Tahoma, sans-serif; }
+    body{
+      margin:0;
+      min-height:100vh;
+      color:var(--ink);
+      background:
+        radial-gradient(900px 520px at 12% 10%, rgba(255,255,255,.30), transparent 60%),
+        radial-gradient(900px 520px at 88% 18%, rgba(255,255,255,.22), transparent 58%),
+        linear-gradient(135deg,
+          color-mix(in oklab, var(--brand-primary) 78%, #ffffff 22%) 0%,
+          color-mix(in oklab, var(--brand-secondary) 70%, #ffffff 30%) 55%,
+          color-mix(in oklab, var(--brand-accent) 18%, #ffffff 82%) 100%);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      padding:18px;
+    }
+
+    header{
+      width:min(1020px, 100%);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      margin:6px 0 14px;
+    }
+    .brandWrap{ display:flex; align-items:center; gap:12px; min-width:0; }
+    .brandLogo{
+      width: 46px; height: 46px;
+      border-radius: 12px;
+      background: rgba(255,255,255,.88);
+      box-shadow: 0 10px 22px rgba(0,0,0,.18);
+      border: 1px solid rgba(255,255,255,.78);
+      display:flex; align-items:center; justify-content:center;
+      overflow:hidden;
+      flex: 0 0 auto;
+    }
+    .brandLogo img{ width:100%; height:100%; object-fit:contain; padding:6px; display:block; }
+    .brandText{ display:flex; flex-direction:column; gap:3px; min-width:0; }
+    h1{
+      margin:0;
+      font-size: clamp(18px, 3.4vw, 28px);
+      color:#fff;
+      letter-spacing:.2px;
+      text-shadow: 0 3px 12px rgba(0,0,0,.25);
+      user-select:none;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .subtitle{
+      margin:0;
+      color: rgba(255,255,255,.92);
+      font-size: 13px;
+      text-shadow: 0 2px 8px rgba(0,0,0,.15);
+    }
+    .meta{
+      text-align:right;
+      color: rgba(255,255,255,.92);
+      font-size: 12px;
+      text-shadow: 0 2px 8px rgba(0,0,0,.15);
+      user-select:none;
+    }
+
+    .shell{
+      width:min(1020px, 100%);
+      background: var(--glass);
+      border: 1px solid rgba(255,255,255,.25);
+      border-radius: calc(var(--radius) + 6px);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      overflow:hidden;
+    }
+
+    .tabs{
+      display:flex;
+      gap:10px;
+      padding:10px;
+      background: var(--glass2);
+      border-bottom: 1px solid rgba(255,255,255,.22);
+    }
+    .tab{
+      flex:1;
+      border:0;
+      cursor:pointer;
+      padding:12px 14px;
+      border-radius: 14px;
+      font-weight: 950;
+      letter-spacing:.2px;
+      color: rgba(15,23,42,.92);
+      background: rgba(255,255,255,.90);
+      box-shadow: 0 6px 16px rgba(0,0,0,.10);
+      transition: transform .15s ease, filter .15s ease, background .15s ease;
+    }
+    .tab:hover{ transform: translateY(-1px); filter:saturate(1.05); }
+    .tab.active{
+      color:#0b1220;
+      background: linear-gradient(135deg,
+        color-mix(in oklab, var(--brand-accent) 24%, #fff 76%),
+        rgba(255,255,255,.94));
+      box-shadow: 0 10px 18px rgba(0,0,0,.14);
+    }
+
+    .content{ display:none; padding:16px; }
+    .content.active{ display:block; }
+
+    .card{
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,.78);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow2);
+      padding:14px;
+    }
+
+    .wheelGrid{
+      display:grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap:16px;
+      align-items:stretch;
+    }
+    @media (max-width: 860px){ .wheelGrid{ grid-template-columns: 1fr; } }
+
+    .wheelStage{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:8px;
+    }
+    .wheel-wrapper{
+      position:relative;
+      width:min(500px, 86vw);
+      aspect-ratio: 1 / 1;
+      user-select:none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    canvas#wheelCanvas{
+      width:100%;
+      height:100%;
+      cursor:pointer;
+      border-radius:50%;
+      box-shadow: 0 18px 38px rgba(0,0,0,.18);
+      background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.55), rgba(255,255,255,.08) 55%, rgba(0,0,0,.06) 100%);
+    }
+
+    /* Pointer: sharp, points DOWN into the wheel (no white dot) */
+    .pointer{
+      position:absolute;
+      left:50%;
+      top:-18px;
+      transform: translateX(-50%);
+      width: 70px;
+      height: 54px;
+      pointer-events:none;
+      z-index: 5;
+      filter: drop-shadow(0 10px 12px rgba(0,0,0,.35));
+    }
+    .pointer::before{
+      content:"";
+      position:absolute;
+      left:50%;
+      top:0;
+      transform: translateX(-50%);
+      width: 0; height: 0;
+      border-left: 18px solid transparent;
+      border-right: 18px solid transparent;
+      border-top: 42px solid var(--brand-accent);
+    }
+    .pointer::after{
+      content:"";
+      position:absolute;
+      left:50%;
+      top:6px;
+      transform: translateX(-50%);
+      width: 0; height: 0;
+      border-left: 13px solid transparent;
+      border-right: 13px solid transparent;
+      border-top: 32px solid rgba(255,255,255,.80);
+      opacity:.35;
+    }
+
+    .controls{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      height:100%;
+    }
+
+    .statusLine{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      padding:12px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(255,255,255,.80), rgba(255,255,255,.95));
+      border: 1px solid rgba(0,0,0,.05);
+    }
+    .statusTitle{
+      font-weight:950;
+      letter-spacing:.2px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .pill{
+      font-size:12px;
+      font-weight:950;
+      color:#0b1220;
+      padding:6px 10px;
+      border-radius:999px;
+      background: color-mix(in oklab, var(--brand-secondary) 18%, #ffffff 82%);
+      border: 1px solid rgba(0,0,0,.06);
+      white-space:nowrap;
+    }
+    .statusSub{ color:var(--muted); font-size:13px; line-height:1.35; }
+
+    .btnRow{ display:flex; gap:10px; flex-wrap:wrap; }
+    .btn{
+      border:0;
+      cursor:pointer;
+      border-radius: 999px;
+      padding: 12px 16px;
+      font-weight:950;
+      letter-spacing:.2px;
+      box-shadow: 0 12px 22px rgba(0,0,0,.14);
+      transition: transform .15s ease, opacity .15s ease, filter .15s ease;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      user-select:none;
+    }
+    .btn:active{ transform: translateY(1px) scale(.99); }
+    .btnPrimary{
+      color:#fff;
+      background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+      filter: saturate(1.05);
+    }
+    .btnGhost{
+      color:#0b1220;
+      background: rgba(255,255,255,.92);
+    }
+    .btn[disabled]{ cursor:not-allowed; opacity:.55; }
+
+    .hint{
+      font-size:12px;
+      color:var(--muted);
+      padding:10px 12px;
+      border-radius: 12px;
+      background: rgba(255,255,255,.90);
+      border: 1px dashed rgba(0,0,0,.12);
+    }
+
+    .namesGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:14px;
+    }
+    @media (max-width: 860px){ .namesGrid{ grid-template-columns: 1fr; } }
+
+    textarea{
+      width:100%;
+      min-height: 210px;
+      resize: vertical;
+      padding:12px;
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,.12);
+      outline:none;
+      box-shadow: inset 0 2px 10px rgba(0,0,0,.06);
+      font-size: 15px;
+      line-height: 1.4;
+      background: rgba(255,255,255,.94);
+    }
+    .smallRow{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-top:10px;
+    }
+    .fileInput{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(0,0,0,.10);
+      cursor:pointer;
+      font-weight:950;
+      box-shadow: 0 10px 18px rgba(0,0,0,.12);
+      user-select:none;
+    }
+    .fileInput input{ display:none; }
+
+    .listBox{
+      background: rgba(255,255,255,.94);
+      border-radius: var(--radius);
+      border: 1px solid rgba(0,0,0,.07);
+      box-shadow: var(--shadow2);
+      padding: 12px 12px 10px;
+      min-height: 240px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .listHead{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .listHead h3{ margin:0; font-size: 16px; font-weight: 950; }
+    .countBadge{
+      font-size:12px;
+      font-weight:950;
+      padding:6px 10px;
+      border-radius: 999px;
+      background: color-mix(in oklab, var(--brand-accent) 14%, #ffffff 86%);
+      border: 1px solid rgba(0,0,0,.08);
+      white-space:nowrap;
+    }
+    ul{ margin:0; padding: 0 0 0 18px; overflow:auto; max-height: 340px; }
+    li{ margin: 4px 0; word-break: break-word; }
+    .note{ font-size:12px; color:var(--muted); margin:8px 0 0; }
+
+    .overlay{
+      position:fixed;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      background: rgba(0,0,0,.35);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 999;
+      padding:18px;
+    }
+    .overlay.show{ display:flex; }
+
+    .popup{
+      width: min(520px, 92vw);
+      background: rgba(255,255,255,.97);
+      border-radius: 22px;
+      box-shadow: 0 22px 60px rgba(0,0,0,.35);
+      border: 1px solid rgba(255,255,255,.88);
+      padding: 20px 18px 18px;
+      transform: translateY(12px) scale(.96);
+      opacity: 0;
+      transition: transform .35s cubic-bezier(.2,.9,.2,1), opacity .35s ease;
+      text-align:center;
+      position:relative;
+      overflow:hidden;
+    }
+    .overlay.show .popup{ transform: translateY(0) scale(1); opacity:1; }
+    .popTitle{
+      margin: 0 0 6px;
+      font-size: 18px;
+      font-weight: 950;
+      color: var(--brand-accent);
+      letter-spacing:.2px;
+    }
+    .winner{
+      font-size: clamp(26px, 4.2vw, 34px);
+      font-weight: 1000;
+      margin: 6px 0 4px;
+      color: var(--brand-primary);
+      text-shadow: 0 2px 10px rgba(0,0,0,.06);
+      word-break: break-word;
+    }
+    .congrats{ margin: 0; color: #0b1220; font-weight: 950; letter-spacing:.2px; }
+    .subcon{ margin: 6px 0 0; font-size: 13px; color: var(--muted); }
+
+    #fxCanvas{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      z-index: 998;
+      display:none;
+    }
+    #fxCanvas.show{ display:block; }
+
+    .sparkStrip{
+      position:absolute;
+      inset:auto -40px -60px -40px;
+      height: 140px;
+      background:
+        radial-gradient(circle at 18% 30%, color-mix(in oklab, var(--brand-accent) 40%, transparent), transparent 55%),
+        radial-gradient(circle at 52% 10%, color-mix(in oklab, var(--brand-secondary) 45%, transparent), transparent 55%),
+        radial-gradient(circle at 82% 40%, color-mix(in oklab, var(--brand-primary) 35%, transparent), transparent 55%);
+      transform: rotate(-6deg);
+      opacity:.9;
+      filter: blur(.2px);
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="brandWrap">
+      <div class="brandLogo" title="Bangkok Hospital Hat Yai">
+        <img id="brandLogoImg" alt="Hospital Logo" />
+      </div>
+      <div class="brandText">
+        <h1>🎉 วงล้อสุ่มรางวัลปีใหม่ 🎉</h1>
+        <p class="subtitle">Pointer ปลายแหลมชี้ลงเข้าวงล้อ (12 นาฬิกา)</p>
+      </div>
+    </div>
+    <div class="meta">
+      <div>Default names: จากไฟล์ Excel แนบ</div>
+      <div>Export: Winners .xlsx</div>
+    </div>
+  </header>
+
+  <div class="shell">
+    <div class="tabs">
+      <button class="tab active" id="tabWheel" type="button">วงล้อ</button>
+      <button class="tab" id="tabNames" type="button">รายชื่อ</button>
+    </div>
+
+    <section id="wheel" class="content active">
+      <div class="wheelGrid">
+        <div class="card wheelStage">
+          <div class="wheel-wrapper" aria-label="Spin wheel">
+            <canvas id="wheelCanvas"></canvas>
+            <div class="pointer" aria-hidden="true"></div>
+          </div>
+        </div>
+
+        <div class="card controls">
+          <div class="card" style="padding:12px; background: rgba(255,255,255,.92); border-radius:14px; border:1px solid rgba(0,0,0,.06);">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:6px;">
+              <div style="font-weight:950;">ผลล่าสุด</div>
+              <div style="font-size:12px; color:var(--muted);" id="lastWinnerMeta">ยังไม่มี</div>
+            </div>
+            <div style="font-size:18px; font-weight:1000; color:#0b1220;" id="lastWinnerText">—</div>
+            <div class="note" style="margin-top:8px;">
+              เมื่อวงล้อหยุด ชื่อผู้ชนะจะถูกตัดออกจากวงล้อทันที และย้ายไป “ผู้ได้รับรางวัล”
+            </div>
+          </div>
+
+          <div class="statusLine">
+            <div class="statusTitle">
+              <span id="statusMain">พร้อมหมุน!</span>
+              <span class="pill" id="pillCount">ผู้เข้าร่วม 0</span>
+            </div>
+            <div class="statusSub" id="statusSub"></div>
+          </div>
+
+          <div class="btnRow">
+            <button class="btn btnPrimary" id="spinBtn" type="button">หมุนวงล้อ</button>
+            <button class="btn btnGhost" id="peekBtn" type="button" title="แสดงชื่อที่อยู่ตรง Pointer ตอนนี้">ดูชื่อใต้ลูกศร</button>
+            <button class="btn btnGhost" id="resetAngleBtn" type="button" title="รีเซ็ตมุมวงล้อ">ตั้งวงล้อให้ตรง</button>
+          </div>
+
+          <div class="hint">
+            เคล็ดลับ: คลิกที่วงล้อเพื่อหมุนได้เช่นกัน และกด Spacebar เพื่อหมุน
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="names" class="content">
+      <div class="namesGrid">
+        <div class="card">
+          <h3 style="margin:0 0 8px; font-weight:950;">เพิ่ม/แก้ไขรายชื่อผู้เข้าร่วม (คนละบรรทัด)</h3>
+          <textarea id="nameList" placeholder="ใส่ชื่อคนละบรรทัด"></textarea>
+
+          <div class="smallRow">
+            <button class="btn btnPrimary" id="loadBtn" type="button">โหลดรายชื่อ / เริ่มต้นใหม่</button>
+
+            <label class="fileInput" title="นำเข้าไฟล์ .txt หรือ .csv">
+              นำเข้าไฟล์รายชื่อ
+              <input id="filePick" type="file" accept=".txt,.csv,text/plain,text/csv" />
+            </label>
+
+            <button class="btn btnPrimary" id="exportXlsxBtn" type="button" title="Export เฉพาะรายชื่อผู้ได้รับรางวัลเป็น .xlsx">
+              Export ผู้ได้รับรางวัล (.xlsx)
+            </button>
+
+            <button class="btn btnGhost" id="clearAllBtn" type="button" title="ล้างรายชื่อและผู้ชนะทั้งหมด">ล้างทั้งหมด</button>
+          </div>
+
+          <p class="note">Export จะสร้างไฟล์ .xlsx เฉพาะ “ผู้ได้รับรางวัล” เท่านั้น</p>
+        </div>
+
+        <div class="card" style="display:flex; flex-direction:column; gap:14px;">
+          <div class="listBox">
+            <div class="listHead">
+              <h3>ผู้เข้าร่วม</h3>
+              <span class="countBadge"><span id="participantsCount">0</span> คน</span>
+            </div>
+            <ul id="participantsList"></ul>
+            <div class="note" id="participantsMore"></div>
+          </div>
+
+          <div class="listBox">
+            <div class="listHead">
+              <h3>ผู้ได้รับรางวัล</h3>
+              <span class="countBadge"><span id="winnersCount">0</span> คน</span>
+            </div>
+            <ul id="winnersList"></ul>
+            <div class="note" id="winnersMore"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <canvas id="fxCanvas"></canvas>
+  <div class="overlay" id="overlay" role="dialog" aria-modal="true">
+    <div class="popup">
+      <div class="sparkStrip" aria-hidden="true"></div>
+      <h2 class="popTitle">ยินดีด้วย!</h2>
+      <div class="winner" id="winnerName">—</div>
+      <p class="congrats">🎉 ขอแสดงความยินดี 🎉</p>
+      <p class="subcon">Popup จะปิดอัตโนมัติในไม่กี่วินาที</p>
+    </div>
+  </div>
+
+  <script>
+    // ✅ Logo จากลิงก์ที่ให้มา
+    const DEFAULT_LOGO_URL = "https://lh5.googleusercontent.com/d/1r7PM1ogHIbxskvcauVIYaQOfSHXWGncO";
+
+    // ✅ รายชื่อ Default (ดึงมาจากไฟล์ Excel ที่แนบ) — คนละบรรทัด
+    const DEFAULT_NAMES_TEXT = `070283 อุทัยวรรณ พนาโยธากุล  Hospital Director Office
+070109 ชุติกาญจน์ รัตนโอภา  Nursing Staff Organization
+505307 กฤตย์อังกูร เชษฐเผ่าพันธ์  Hospital Director Office
+617275 สรรเสริญ ลิ่มสุนทรากุล  Hospital Director Office
+614853 ครรชิต สดแสนรัตน์  Hospital Director Office
+070820 ลภัสรดา นิมิตวิทยา  Administration Office
+070172 นันทนิตย์ ฉัตรศิริวรางกูร  Marketing and Public Relation
+070187 ปิยวรรณ แก้วเจริญ  Patient Experience Management
+592336 ขนิษฐา สาริยะสุนทร  Strategic Management
+070189 นฤมล หนูนาค  Quality Center
+529510 นันททรัพย์ พรหมสาลี  Engineer&Environment&Building
+070202 ธัชนิษฐ์ ปภาพันธุ์  Medical Affair Office
+070533 อภิรดี จันสุกสี  IPUs Medicine
+070447 ฐิติมา เอียดนุช  IPUs Surgery & IPUs Heart
+070329 กุลชญา เมธาธีรกูล  Accounting and Finance
+070744 ณัฐฐากูร ตั้งคำ  IPUs Women Health & Child
+070190 ป่ารี่ด๊ะ บิลล่าเต๊ะ  IPUs Occupational Health & Wellness Center
+070266 เสาวรัตน์ เฮงวัฒนา  Utilization Management
+070766 ดวงใจ นพวงศ์  Human Resources Division
+070467 ขนิษฐา สองเมือง  Medical Support
+070957 นันทพล สมประยูร  Pharmacy
+070199 ศรัทธา พลศิริ  IPUs Special
+071067 เบญจมาศ เตชวิวรรธน์  IPD Pharmacy
+051368 โสริยา มุเด็น  Orthopedic Surgery
+512233 นัฏฐิสร ธนิสวิระสรณ์  Hemodialysis
+071035 ดรุณี ขวัญดำ  Medicine Unit
+070565 สินีนาท แตงอ่อน  Medicine Unit
+506289 อภิชาต ภูธะรักษ์  Customer Services
+534588 ชุติภา สุวรรณคล้าย  Imaging
+505806 อภิญญา สุขคุ้ม  Operating Room
+070368 วิจิตรา พิพัฒน์พงศธร  Operating Room
+502175 ศริณยา ลุนพงษ์  Operating Room
+070055 จันทรัตน์ ธีรปิยสุปรีย์  Cashier
+070064 ปัณฑิตา จันทโฆษ  Cashier
+070485 นฤมล หนูรอด  Surgery Unit
+070204 กฤษณา รัตนโชติ  Admission
+051365 ศิริพร สายวารี  Emergency Services
+010598 พัทธนันท์ แก้วสวัสดิ์  General Support Section
+556423 อรรถพล จันทร์บัว  Engineering
+070789 ณัฐภัท ศิวรักษ์  Engineer&Environment&Building
+070333 ณพัชร แก้วทัศน์  Collection
+070025 รัดหทัย พรหมสุทธิ์  Medical Affair Office
+070254 รัตนา ศิริมุสิกะ  Nursing Professional Training
+506111 ประจักษ์ ลักษณะ  Transportation
+520294 ธวัชชัย แซ่ลิ่ม  Chemo & IV Pharmacy
+613756 เบญญาภา พยนต์รัตน์  Sales & Marketing
+606331 พัชรมาศ สุขปาละ  Accounting and Finance
+071122 รุ่งฤดี สุวรรณชาตรี  IPUs Heart
+070468 สินีนาถ ศิวรักษ์  Utilization Management
+100397 สุธิดา แสงจันทร์  Accounting
+070441 ปิยะเนตร บัวฤทธิ์  Rehabilitation
+070186 พฤฒ พรมเจียม  Rehabilitation
+051367 ศศิภัสส์ จันแดง  Emergency and Trauma center
+611549 อลีนา วัฒนวินิน  Marketing Communication
+502558 สาธิตา ตันติยาพงศ์  Quality Center
+090488 จินดา พรหมด้วง  International Marketing
+070944 พิไลวรรณ โปจุ้ย  Women Health Center
+070101 ศิวิไลส์ แก้วคำ  Ward 7
+051364 วิไลลักษณ์ รินทรานุรักษ์  Gastroenterology
+071218 ปุณญิศา ลิ่วชัยชาญ  Ward 7
+512726 ชุมภูนุช หมิแหม  Ward 6
+070706 ปวีณา หมีนอะหวัง  Wellness Center
+071080 วายุรี เหตุทอง  Medical Record
+070433 รอกีนา สะมะอิ  Occupational Health Center
+507410 บัวมาศ ทันประจำสินธุ์  Ward 10
+508874 จิตต์สุภัค เพ็ชรสุริยา  Ward 12
+508140 นิภาภัทร ชีวศรีรุ่งเรือง  OPD Pharmacy
+523499 ศุลี แสงนิล  Gastroenterology
+506547 นฤภัค นิลประภา  Pediatrics
+070998 ศิรินทร หลิมสุนทร  Heart Clinic
+070132 ศศิมา ฤทธิ์ชู  Medical&Inventory Supply Chain
+551896 ศศิกานต์ ยางทอง  Cardiac Cath Lab
+071052 บุญรอด ประดิษฐ  Cardiac Cath Lab
+070252 ศศิณัฏฐ์ มากแก้ว  Ear Nose Throat
+505102 สุภาภรณ์ แซ่ลิ้ม  Intensive Care Unit
+071082 พัชรี วิเชียรซอย  Intensive Care Unit
+504117 ตาณชุฬี วุฒิปุญญะ  Ward 11
+070037 สรณ์กัญนภัส สิทธิโอสถ  Supervisor Office
+070497 ธัญพร ตุลาโชติกุล  Supervisor Office
+070111 ศรีสอาง คชเวช  Supervisor Office
+070765 นุชนารถ คงทอง  Supervisor Office
+070872 กุลญาดา เดชะวิจิตร  Ward 8
+503727 สุพรรณษา ศุภอักษร  Ward 8
+602915 อิมรอน ตาเมาะ  Mobile Check Up
+591531 อรรถพล ลอยลิบ  Mobile Check Up
+598533 นุชรอ นาวารี  Mobile Check Up
+602936 พิชญา สะระดล  Mobile Check Up
+591619 นิยดา สุขสวัสดิ์  Mobile Check Up
+071304 พัชราวจี พลังสินชุม  Mobile Check Up
+594207 ลีน่า ซาดา  Medicine Unit
+070953 สุภาวดี หลงโสะ  Surgery Unit
+515774 จุฑามาศ ศรีประยูรไพศาล  Surgery Unit
+071060 ศรีนวล วัชรมานะกุล  Surgery Unit
+070758 กฤษกร เพ็ชรมงคล  Imaging
+070566 อนุรักษ์ จิตรานนท์  Imaging
+546379 สราวดี ล่องนาวา  Imaging
+596197 พิมพ์อร เจริญพานิช  Imaging
+560469 สหรัฐ ศรีราม  Imaging
+070239 ธัญชนก หวันชิตนาย  Imaging
+554386 ปริยาพรรณ ยิ่งคง  Imaging
+091996 แวซง แวดือราแม  IPD Pharmacy
+561621 วริญญา หมัดชา  IPD Pharmacy
+622235 ปุณยวีร์ ฉัตรินกุล  IPD Pharmacy
+553032 กุลริสา สุวรรณโณ  IPD Pharmacy
+541560 เมย์รยา แซ่โค้ว  IPD Pharmacy
+071168 วรรณนภา ไชยกูล  IPD Pharmacy
+595431 การีหม๊ะ ยานยา  IPD Pharmacy
+070767 ยุพเรศ ผดุง  IPD Pharmacy
+610103 ธมลวรรณ คิดถูก  IPD Pharmacy
+581580 ชนิกานต์ แสงจันทร์  IPD Pharmacy
+505702 ศราวุธ เสนดำ  IPD Pharmacy
+618736 ซูเฟีย สาและ  Orthopedic Surgery
+513855 กาญจนา จันธำรงค์  Orthopedic Surgery
+504477 ชลกนก จารุกรโสกุล  Orthopedic Surgery
+523984 จิตรลดา จันทร์ดอน  Orthopedic Surgery
+592876 ปิยะดา อรัญทิพย์  Orthopedic Surgery
+070426 อรทัย สะแมบากอ  Hemodialysis
+502489 ญาณิศา หลียาวา  Hemodialysis
+070099 อรัญญา คชกาญจน์  Medicine Unit
+051443 อุสุมา ศักดิ์พิสุทธิวณิชย์  Medicine Unit
+070090 วัลนภา โสมเบ็ณหมาน  Medicine Unit
+610120 รัตนา หมะสัน  Medicine Unit
+542045 จีรวรรณ รอดลอยทรัพย์  Medicine Unit
+721328 ยลดา พ็อตทอร์พ  Medicine Unit
+508028 สุกานดา บินหม้าหลี  Medicine Unit
+516144 ศุลัยยา เตย็บอารี  Medicine Unit
+520931 ธนวรรณ พัฒนวิศุทธ์  Medicine Unit
+584546 ทิราภรณ์ เนธิบุตร  Medicine Unit
+591534 โซฟีญา เหะหมัด  Medicine Unit
+525266 ชนกพร คงพันธุ์  Medicine Unit
+512686 พัชรินทร์ จันทมณี  Medicine Unit
+510967 อมรพัฒน์ ยังอุ่น  Patient Escort
+071131 ธีรชัย ทรัพย์แก้ว  Patient Escort
+546549 ปราโมทย์ อินสระคง  Patient Escort
+546673 วรากร สะโตง  Patient Escort
+546658 กฤตเมธ เจริญผล  Patient Escort
+562240 กนิษฐา เหลาะเหม  Emergency
+070512 วิรวรรณ ปูเต็ม  Emergency
+070472 มงคล เทพยา  Emergency
+551822 นิตยา งะสยัง  Emergency
+549243 พาตีฮะ หะมะโอะ  Emergency
+552975 โนรอาซีรา สะมะแอ  Emergency
+586139 ศรุตา ไชยฮัง  Emergency
+574423 นูรดีน ยูนุ  Emergency
+574325 ดลฮาริซ จิหมัน  Emergency
+509183 ทัศนีย์ อนันทบริพงค์  Emergency
+721296 ชลธิชา สังขาร  Emergency
+566106 กมลวัลย์ โยธาทัย  Emergency
+544736 สุคนธา ช่วยนุกูล  Emergency
+516160 สร้อยเพชร เจริญสุข  Emergency
+512571 พนิดา ธรรมประดิษฐ์  Emergency
+510695 ศิรินทรา ทิพแก้ว  Emergency
+605311 หนึ่งธิดา ไชยขวัญ  Emergency
+600857 มาริสา กาเดร์  Intensive Care Unit
+605978 ศิริวรรณ ทองแก้ว  Intensive Care Unit
+611918 นัญมา หมานระโต๊ะ  Intensive Care Unit
+506760 ศาริสา แซ่ลิ่ม  IPD Pharmacy
+506185 ยุพดี เพชร์สุด  IPD Pharmacy
+070633 สุดฤทัย พิธกิจ  IPD Pharmacy
+524140 กุนจิรานัน วัธนะ  Hemodialysis
+531244 เกวลี สุขศรี  Hemodialysis
+574218 มยุรี มาหะมะ  Hemodialysis
+604378 ศิริพร ธรรมปรีชาถาวร  Hemodialysis
+071211 พิชญ์ญากานต์ แก้วสุวรรณ  Hemodialysis
+070962 ชญาดา ไชยรักษ์  Imaging
+528570 พรรณทิพา ลายเลขา  Imaging
+581013 บุณญิสา แซ่ลิ่ม  Imaging
+526742 ชลดา ชาญนักรบ  Imaging
+503304 อุปถัมภ์ พลพิชัย  Imaging
+567239 เกียรติศักดิ์ ชูเกื้อ  Imaging
+567238 บุญกุล มณีรักษ์  Imaging
+514252 ธีร์จุฑา ลาวัลย์  Imaging
+518386 ขวัญดาว มีสุข  Imaging
+543404 ฮำบาลี อูเต็ง  Imaging
+502753 ฮัซวานี หมุดยะฝา  Imaging
+567237 ณัฐฐิตา แก้วละเอียด  Imaging
+070035 ณัชพล ลัพกิตโร  Imaging
+070700 ธัญลักษณ์ กู้วรกุล  Imaging
+561620 ซะฮีดัน สาและ  Imaging
+516162 วิไลลักษณ์ บินตะสอน  Operating Room
+730794 อาหามะ ดอเลาะ  Operating Room
+502137 ณัจฉรียา ไชยโรจน์  Operating Room
+071261 อรอุมา สุวรรณทวี  Operating Room
+070466 สกุลคะดี ด้วงชาย  Operating Room
+506635 จิราภรณ์ ใสบริสุทธิ์  Operating Room
+583234 นราธิป หมาดสตูล  Operating Room
+616150 วนิดา สังข์ป้อม  Operating Room
+563851 จุฬาลักษณ์ จุ้งลก  Operating Room
+510007 ไชยันต์ จันทร์นิตย์  Operating Room
+619327 สุกัญญา ทองบุญชู  Cashier
+506362 ลภาวัน สังหวาน  Cashier
+622015 อัญชนัน บัวงาม  Cashier
+070053 กฤษศิกาญจ์ โรจน์กิจจานุรักษ์  Cashier
+070813 ปวรวรรณ สุจิระวงศ์  Cashier
+515054 รชภัค ชลดาไชยากร  Nutrition Therapeutic
+536759 พิจาริน สมบูรณกุล  Nutrition Therapeutic
+503537 กลอยทิพย์ มากเกื้อ  Operating Room
+505398 ภัทรวดี เซ่งบุญเล่ง  Operating Room
+070211 สมศรี อนันตพันธ์  Operating Room
+070553 กมลพรรณ สุวรรณโณ  Operating Room
+070762 มูฮำมัดรอบี หมันหลิน  Operating Room
+070897 เตือนใจ สุวาหลำ  Operating Room
+535675 จักรี หมาดยาหมู  Operating Room
+547270 เนตรทิพย์ ชินไชย  Operating Room
+616879 ศิพิมพ์ ขันกำเหนิด  Operating Room
+568098 ลายูซ่า หมัดเหระ  Operating Room
+070323 สำรอง โภคา  Operating Room
+547374 ทัศนา เหย็บหนุด  Operating Room
+549931 จุฬารัตน์ เต็งรัง  Cashier
+558200 วชิราภรณ์ ยิ่งทวีรัตน์  Cashier
+584543 อารียา ราชดาเพชร  Cashier
+070938 ศุภลักษณ์ พรหมพิทักษ์  Cashier
+071031 ณัฐธิญา หมาดโสะ  Cashier
+612952 จิรวรรณ เพ็ชรยศ  Cashier
+503399 ลลิตา มะยุโซ๊ะ  Cashier
+013271 โชติกา ชูศรีสงคราม  Cashier
+617130 ชญาณิศา ทนโคจารย์  Cashier
+617926 เกยุราวรรณ ถุงทอง  Cashier
+617924 สร้อยสุดา ทัดแก้ว  Cashier
+547484 จันทิมา เส็มสันติ์  Surgery Unit
+534164 รูไหวริหย๊ะ ปูตีล่า  Surgery Unit
+602929 อัสนา ราชชำรอง  Surgery Unit
+070385 รุกิ ตุดบัตร  Surgery Unit
+575489 กนกวรรณ หนูปลอด  Surgery Unit
+595223 สิริกาญจน์ เขมะธารากูล  Orthopedic Surgery
+530831 วนิดา ลำโป  Orthopedic Surgery
+070045 สุพิศ แพนสมบัติ  Orthopedic Surgery
+537416 จุฬามณี พูลแก้ว  Admission
+538398 ผจง ศรีสง  Admission
+070102 สิหรา สมุด  Admission
+506548 พานิดา เดชะ  Admission
+513498 เสาวคนธ์ เส้งอักษร  Admission
+511454 สมิตรา ปลอดทองสม  Admission
+569660 ภัทรนิศวร์ เรืองกิตติ์กุลภัท  Admission
+620609 วันโซเฟีย สาและ  Emergency Services
+617992 ศศลักษณ์ ลิขิตศรีไพบูลย์  Emergency Services
+504120 ณรงค์ เถาถวิล  Emergency Services
+070166 สายใหม่ สังข์ศิลป์ชัย  Labour Room
+071012 อารีนา ประทาน  Labour Room
+071030 กนิชญ์ภรณ์ สังข์ด้วง  Labour Room
+537008 วรัญญา อินทองปาล  Labour Room
+070503 นาตยา สมัครพงศ์  Nursery
+070171 สิริภัสสร พิพัฒน์ศุภนิมิต  Nursery
+512896 ซุไวบ๊ะห์ บินเจ้ะเงาะ  Nursery
+548780 พาตีนี เจะหะ  Nursery
+518380 อดิศักดิ์ ศรีสงเคราะห์  Transportation
+574821 ไววิทย์ ชัยทอง  Transportation
+070625 จารุวัฒน์ ฉายเหล่าวานิช  Transportation
+543910 โอภาส ธรรมมิกะกูล  Transportation
+071018 ศราวุฒิ สรกุล  Transportation
+536310 ธวัฒน์ สุวรรณละออง  Transportation
+533022 ทวี แก้วทอง  Transportation
+502817 อมรเดช คงพล  Transportation
+525263 สุรเดช รัตนกาญจน์  Transportation
+070917 พฤกษชาติ สัญศรีเมือง  Operator
+604822 นัดดาวดี แก้วบุตร  Operator
+070068 ณัฐรดา รัตนโสม  Operator
+530392 ฐิตาภา ธนะเบญจผล  Engineering
+514255 ภาวิณี เพชรจำรัส  General Support Section
+513676 สุนิศา จันทร์ขาว  General Support Section
+070516 วรรณชุลี ปราชญา  General Support Section
+070402 เวธกา มากทองน้อย  Operator
+070072 ฐานวีร์ พุทธิมา  Operator
+070340 สจี รักษสุธากาญจน์  Operator
+590257 เจนเนตร บุญรังษี  Administration Office
+542251 จุฑามาศ จันทวิลัย  Quality Center
+616156 ติตานนท์ ไชยแก้ว  Engineering
+550384 อริยะ ณะมณี  Engineering
+598674 ณัฐวุฒิ ทับเที่ยง  Engineer&Environment&Building
+502593 สุภาพร ประวัติ  Collection
+585559 มณิภา ฟูน้อย  Collection
+504627 นภาพร จันทร์ชุม  Collection
+070169 อัจจนา ศรประสิทธิ์  Collection
+070216 ธนวรรธน์ ชีวพิพัฒพงศ์  Collection
+070372 สุนันทา ผลทวีชัย  Collection
+590270 เกวลิน ฮุยเป้า  Medical Affair Office
+070276 ประภาวดี เคลือบเพชร  Nursing Professional Training
+516157 เสาวนีย์ ฉางดำ  Nursing Professional Training
+579079 จตุรตา จันทชาติ  Strategic Management
+513799 ชนิตา รองสวัสดิ์  Nursing Staff Organization
+513096 โสภณ ไทยชน  Transportation
+190130 จิรา ศักดิ์ศรี  Chemo & IV Pharmacy
+522474 สิริมา จิระนคร  Chemo & IV Pharmacy
+521093 เพ็ญผกา วิจักษณ์กุล  Chemo & IV Pharmacy
+070746 รณิดา สว่างวรรณ์  IPUs Medicine
+519427 พรรณทิพา สมประยูร  IPUs Medicine
+614914 ชัญญานุช เขียวนุ้ย  Contract Management
+529438 ธนภัทร์ สัตถาวร  Marketing Communication
+543173 ไพสิฐ โกศลสำนึก  Marketing Communication
+506569 สันม่า หะยีหมัด  IPUs Occupational Health & Wellness Center
+592330 ชนุวัทก์ วจนะวงศ์สาทร  Sales & Marketing
+622174 ณัฐกมล ทองคำ  Sales & Marketing
+622175 ดลนภา หนูอุไร  Sales & Marketing
+070370 อุทัยทิพย์ ละออสุวรรณ  Sales & Marketing
+608142 กนกทิพย์ ทิพย์เสวต  Sales & Marketing
+071065 วาระ สุขสวัสดิ์  Sales & Marketing
+605990 พริมาดา กังสนันท์  Accounting
+070141 ลลิตรวี อกนิษฐ์  Accounting
+100393 ณิชชา เรืองศรี  Accounting
+070787 สมใจ ทิพย์อักษร  Accounting
+560140 จิราพร สัตถาวร  Bangkok Referral Center
+604376 ปวิชญา สุเทพบำรุง  Sales & Marketing
+071104 ทัดทอง หมวดสิงห์  Sales & Marketing
+071039 กุลภัสสร์ จานชา  First Aid Training Academy
+504136 กนกพร ทักษิณาวงศ์สกุล  IPUs Surgery
+511175 กัลยาณี แซ่โล่  IPUs Heart
+070539 ณัฐณิชา โชติโสภณพงศ์  Utilization Management
+070561 ปิยะนันท์ เพชรหัวบัว  Utilization Management
+071270 ณัชชา พรหมอินทร  Utilization Management
+190343 เจตสุดา แสงสว่าง  Utilization Management
+622173 ธันย์ชนก เมืองแก้ว  Utilization Management
+610107 นินัสริน วชิรานุพงศ์  Utilization Management
+620265 มัณฑริกา เลิศเกียรติรัชตะ  Utilization Management
+070047 อัญชนา ชุมปาน  Utilization Management
+622016 อรุณพรรณ แซ่จ่อง  Utilization Management
+504123 เสาวลักษณ์ ปราบแก้ว  IPUs Heart
+585945 กันตพงษ์ ศรีวงศ์จินดา  General Support Section
+070256 นุสลา จิตสุวรรณ  General Support Section
+070145 อุไรวรรณ สมทอง  General Support Section
+503757 สุภาภรณ์ คำสุวรรณ์พจนา  General Support Section
+071170 ทิพย์สุดา วงศ์สุริยะ  Accounting
+529948 สุเชษฐ์ นาคสง่า  Accounting
+531444 เจนจิรา จันทนา  Accounting
+544091 สิริพร จันตะเคียน  Accounting
+609205 ชรินรัตน์ ชูดำ  Bangkok Referral Center
+070142 โภควินท์ หนูเสน  Chemo & IV Pharmacy
+519684 ชนัญญา พิริยะเพียรพันธ์  Rehabilitation
+581328 กรนัจ อินทมะโน  Rehabilitation
+592896 นูรุลฟัตฮา สาแม  Rehabilitation
+071079 อภิสรา ยอดนุ้ย  Rehabilitation
+616361 พัณณ์ชิตา  เขียวมณีย์  Rehabilitation
+595698 มุมีนา เหมมัน  Rehabilitation
+070531 สุปราณี กัลยา ณ คุณากร  Rehabilitation
+071277 นันทน์ศิญา หาญห้าว  Rehabilitation
+620020 นัจมีย์ หวาฉลุง  Rehabilitation
+617597 ธมนวรรณ สุวรรณวงศ์  Rehabilitation
+524495 พันทิพา เครือฟั่น  Rehabilitation
+504904 กิรติกานต์ สุวรรณชาตรี  Emergency
+051937 สาลินี บู่สะเม๊าะ  Neurology
+070361 ภัทร์ทวัญ พัฒโน  Neurology
+590262 ภาวินี นฤนาทมิ่ง  Neurology
+616151 กัลยาณี คุรุวาศรี  Intensive Care Unit
+535655 สุไฮบ๊ะ อารง  Intensive Care Unit
+541713 อาซียะฮ์ วาเด็ง  Intensive Care Unit
+551821 ตวงทิพย์ อักษรชู  Intensive Care Unit
+569157 นริศรา ปิริยะ  Intensive Care Unit
+585943 ลัดดาวัลย์ อินตะโร  Intensive Care Unit
+515787 จีราวรรณ เฉิดฉิ้ม  Intensive Care Unit
+070193 อรกานต์ อินทร์สุวรรณโณ  Intensive Care Unit
+538813 วานิตา ลิงาลาห์  Intensive Care Unit
+553031 นาบิลา บิลล่าเต๊ะ  Intensive Care Unit
+532379 อนุรัตน์ สุขศรี  Patient Escort
+070280 คชาภัณฑ์ สุวรรณโภคา  Patient Escort
+071264 ประดิษฐ์ งามเมือง  Patient Escort
+071202 ชาญวิทย์ คงเดิม  Patient Escort
+517653 นันทพล ทองธรรมชาติ  Patient Escort
+610110 ธนานนท์ เตชะวรรโต  Patient Escort
+071073 ภานุทัศน์ พลพิทักษ์  Patient Escort
+070869 จริยาวดี ศรีระสันต์  Patient Escort
+513497 โกสิน นรสิงห์  Patient Escort
+512596 กันตภณ มรรคคงคา  Patient Escort
+614771 นาเดียร์ สาเม๊าะ  Rehabilitation
+592861 จิตราพร คงเกื้อ  Rehabilitation
+616157 วรรณี มะรีเป็น  Marketing Communication
+616881 สมเกียรติ อ่อนแก้ว  Marketing Communication
+528623 ณฐพล เหือดไธสง  Marketing Communication
+070654 นูรีดา อินทรคีรี  Operator
+070756 ชลิญทิพย์ กาญจนประดิษฐ์  Operator
+597306 เฉลิมวัฒน์ ตั้งหิรัญเสถียร  Information Technology
+592454 พัชรพล สุขจำรัส  Information Technology
+618626 ศิวกร จันทร์แสงศรี  Information Technology
+576189 ชาญวิทย์ จิตสุวรรณ  Information Technology
+070180 อามีนะ บิลตาลี  Human Resources Management
+528342 นาริฉัตร สงจันทร์  Human Resources Management
+070947 ปริชาติ บุญเกลี้ยง  Human Resources Management
+527755 จุฑามาศ รามสูต  Human Resources Management
+071229 ขจร หงษ์สิทธี  Human Resources Development
+564764 สุปวีณ์ ยงยุทธวุฒิกุล  Human Resources Development
+584688 อมรรัตน์ ปานรักษ์  Human Resources Development
+590015 พัทธมน มะลิพันธ์  Human Resources Development
+595682 ธัญญรัตน์ แสงมณี  Quality Center
+616155 มุกดาวดี นกแก้ว  Neurology
+507680 จุติมา เบ็ญอ้าดัม  Neurology
+620266 กชกร สังเทระ  Neurology
+070587 ณัฐกานต์ ศรัณย์บัณฑิต  Dental
+070327 อรุโณทัย จันทราทิพย์  Dental
+523944 ณัฎฐ์นรีย์ รอดผล  Dental
+070071 อัญชลี หมีนอะหวัง  Dental
+070505 อุบล ศาสนประดิษฐ์  Dental
+070430 ภารดี สุวรรณโณ  Dental
+070228 ยุพดี สุขสี  Dental
+520706 ลฎาภา ศรีน๊ะ  Rehabilitation
+528513 จิตาภรณ์ หลีกันชะ  Quality Center
+605989 ศันสนีย์ ชายเกตุ  Quality Center
+620022 อรพินทร์ คำภูมี  Quality Center
+554385 อัญชลี บุญขาว  Quality Center
+070993 วาทินี โพธิ์มน  Quality Center
+509298 วัฒนา ชายเกตุ  Quality Center
+070595 ศศวรรณ ทะนนท์  International Marketing
+528618 ชลธิชา มะสะอาว  International Marketing
+071000 พิสิษฐ์ วชิรอนันต์  International Marketing
+593307 นภัสสร ถิ่นนัยธร  Ward 6
+539341 โรสมาณี มายิ  Dermatology
+524842 ทิพากรณ์ ไฝทอง  Dermatology
+070260 สุวรรณี ขาวอินทร์  Hematology
+070894 จรีภรณ์ นราไพสิฐ  Hematology
+538284 ฆนิฏา สุวรรณชาตรี  Hematology
+573742 นันทินี ลิ่มนราสุวรรณ  Vaccine Clinic
+591536 โชติกา วิจิตรพันธุ์  Vaccine Clinic
+070780 ไดอาน่า บิลหมุด  Tele Nursing & Continuety
+518383 ฟารีดา หมาดยาหมู  Tele Nursing & Continuety
+563964 ไอรดา อาแว  Ward 7
+071297 สุวันดี โยธายืนยง  Ward 7
+593302 มาดีฮะห์ มะแตหะ  Ward 7
+594707 จณิสตา ดาจิ  Ward 7
+514127 ปิยวดี เจริญสุข  Ward 7
+507811 วันณิษา รอดเพชร  Ward 7
+070114 วันดี อารหัต  Ward 7
+510696 ฐิตาพร จันทร์ศิริ  Ward 7
+537125 นูรอาซีกีน ตาเยะ  Ward 7
+720900 ปรัศนีย์ พักตร์จันทร์  Ward 7
+070452 กัลยา วัลภา  Ward 7
+564759 ภัทรวดี รัตนิล  Ward 7
+508518 วิภา หลงสะเตีย  Ward 7
+615315 สุรัยญา บินล่าเต๊ะ  Ward 7
+507415 สจิกา แดงคง  Ward 7
+070036 ลภัสรดา พงศ์ประยูร  Ward 7
+051360 รอเดียะ ยียุโซะ  Ward 7
+071124 จันทร์จิรา เบ็ญสลาหมัน  Ward 7
+505530 อิงค์กุลย์กร ศรีโยม  Ward 7
+536390 นูรุลฟิรดาว สาอุ  Ward 6
+070122 นงเยาว์ อินทรคีรี  Ward 6
+514476 พวงมณี ไชยละมุล  Ward 6
+520980 ภาวิณี จอมนุ้ย  Ward 6
+516163 ไลลา นิโบ  Ward 6
+517792 จันทินี วุฒิพงศ์  Ward 6
+519373 กอรีฝ๊ะ ราหนิ  Ward 6
+522347 สุธีรา สิริกุลดิลก  Ward 6
+617127 สุธาทิพย์ ศรีเกตุ  Ward 6
+502770 ฟาตีม๊ะฮ หมัดอะดั้ม  Ward 6
+549132 ซาลีต้า ผอมเขียว  Ward 6
+616880 อริศรา สาและ  Ward 6
+617594 กัลย์สุดา ลิ่มปี่  Ward 6
+617600 อุมารินทร์ สุนสระบุตร  Ward 6
+611926 อาภัสรา ประคองเกื้อ  Ward 6
+506956 อารยา หลงกอหราบ  Occupational Health Center
+071046 ปุญญิศา คงสุข  Occupational Health Center
+512564 กมลวรรณ วงศ์โพธิพันธ์  Occupational Health Center
+071169 อริสสราภรณ์ ฉายห้อง  Occupational Health Center
+527729 เกวลี สัจกุล  Occupational Health Center
+561600 สโรชา ลักษณะ  Occupational Health Center
+572909 นูรีซาน ปานดำ  Occupational Health Center
+517649 พัทธ์ธีรา ผิวสร้อย  Occupational Health Center
+071057 ฉวีวรรณ แสงมณีย์  Occupational Health Center
+070575 สุภาภรณ์ ท่วมเพ็ชร  Occupational Health Center
+600858 นาตาชา หวันแสละ  Occupational Health Center
+616878 ซานีตา แวสแลแม  Cardiac Cath Lab (Outreach Pattani)
+616876 ชลธิชา หวัดพงศ์  Cardiac Cath Lab (Outreach Pattani)
+616877 ดียาณา และนอ  Cardiac Cath Lab (Outreach Pattani)
+535966 ซูนีดา ยีหวังกอง  Cardiac Cath Lab (Outreach Pattani)
+552441 สุนิตา เทพารักษ์  Ward 7
+602938 ปิยะธิดา โดยหัด  Occupational Health Center
+517782 อังคณา ด้วงชาน  Occupational Health Center
+070052 ทิพย์วัลย์ สุวรรณเวหา  Occupational Health Center
+071214 เขมอรอินทุ์ จันทร์เรือง  Occupational Health Center
+071088 รอฮานา เส็นติระ  Wellness Center
+524484 ทัศนันท์ ลภัสศุภอนันต์  Wellness Center
+517647 เนตรดาว หมัดอะดั้ม  Wellness Center
+508018 ทัศวรรณ ด้วงชาน  Wellness Center
+070281 ภัณฑิรา บินร่าหมาน  Wellness Center
+621545 คริสตา พัฒน์แก้ว  Wellness Center
+530476 อุษารัตน์ จันทภาโส  Wellness Center
+551253 มาดีฮะ ศุทธิวรรณรักษ์  Wellness Center
+592778 นภัทรธมณฑ์ กุกุดเรือ  Wellness Center
+070852 ขวัญตา ชายแก้ว  Wellness Center
+618624 อภิสรา สุขประสิทธิ์  Wellness Center
+619331 อมรรัตน์ สุขไกร  Breast Clinic
+070044 พัชรินทร์ สุวรรณขำ  Occupational Health Center
+602943 สุพัตรา มูณีรัตน์  Ward 12
+608405 ภาวิดา นาสี  Ward 12
+618625 ปรียานุช ฉายกล้าหาญ  Ward 12
+511671 ขวัญใจ สันหลี  Ward 12
+617589 ธัญสุดา ศรีทอง  Ward 12
+622172 มาลินี วัฒนะ  Ward 12
+616158 อรนิพรรณ วิบูลย์ธรรมปาละ  Ward 12
+051910 ไอยลดา วรเกียรติธาดา  Ward 8
+552435 วันทกานต์ ทัศนภูมิ  Ward 9
+617121 ฟาตู สุหลง  Ward 9
+611200 พรสุดา สมคะเณย์  Ward 9
+573760 ฟาตีฮะห์ กูลี  Ward 9
+670660 อัยดา จะปะกิยา  Ward 9
+539710 สุปราณี หมุดตะเหล็บ  Ward 10
+522993 ภัชลดา จันทะรัตน์  Ward 10
+616359 นัสรียา บูละ  Ward 10
+535828 สิวินีย์ ทองปัญจา  Ward 10
+600386 นุสรา อาแว  Ward 10
+605985 นัยลี ดาแลหมัน  Ward 10
+602620 ณัฐญา รักตะสิงห์  Ward 10
+595318 อัซมาวีย์ กามุง  Ward 10
+552322 แอมี ลีกี  Ward 6
+582074 ยาวารี ปุนยัง  Ward 6
+574687 สุภาพร แพงมี  Ward 6
+602618 มาดีฮะ เวาะมะ  Ward 6
+616154 อาคีเราะ มู่เก็ม  Ward 9
+070348 นารีรัตน์ อำภาพร้อม  Ward 9
+523902 ซาปาน่า อุเจ๊ะ  Ward 9
+511675 ภัคจิรา นิลสวัสดิ์  Ward 9
+511670 มลกิจ บุหงา  Ward 9
+509302 ชไมพร บุญคง  Ward 9
+070442 กุลชาดา อักษรเนียม  Ward 9
+070214 อาใจ โศภิษฐิกุล  Ward 9
+510856 วีรเกต จันทรนิกร  Ward 9
+071203 ดวงกมล ทองแก้ว  Ward 9
+581021 รัตติยา ชอบงาม  Ward 9
+602944 ซูรรีนา ดือรอฮิง  Ward 10
+599879 ภัสสร นำสวรรค์  Ward 12
+070524 ฟารีดา แหละกะหรีม  Ward 12
+070144 ศุภิสรา วัชรวรานนท์  Ward 12
+070750 บุญสุข สมใจ  Ward 12
+516159 รุ่งนภา หมุสา  Ward 12
+549910 ซุลฟา ยามา  Ward 12
+538399 เอริน หมาดโสะ  Ward 12
+562232 ณัฐวดี นวลมี  Ward 12
+540180 เครือวัลย์ ฤทธิ์มาก  Ward 12
+070934 อาซ๊ะ หลีเส็น  IPD Pharmacy
+071205 นันทภัค สุขสว่างผล  OPD Pharmacy
+512019 ซันนีญา หมัดอะหิน  OPD Pharmacy
+510489 สุมาลี พิทักษ์ลิมนุวงศ์  OPD Pharmacy
+544265 นันทรัตน์ ธีรโรจนวงศ์  OPD Pharmacy
+533985 ชนิตา ชายเกตุ  OPD Pharmacy
+539873 รุ่งทิวา ประดิษฐ์  OPD Pharmacy
+516859 ชรินธร อัครวิเนค  OPD Pharmacy
+541561 นฤมล กิติไพรวัลย์  OPD Pharmacy
+558192 ปิยวรรณ รติวิทยกุล  OPD Pharmacy
+561359 ซาวีย๊ะ อาบูดาโอ๊ะ  OPD Pharmacy
+523287 ภัทรินทร์ ชูจันทร์  OPD Pharmacy
+560857 นนทพร ธีรกุลพจนีย์  OPD Pharmacy
+595363 อมลมณี ทศพิศนิจธเนศ  OPD Pharmacy
+534747 สิทธิเดช จิตดี  OPD Pharmacy
+504325 สินีนาฎ พงศาปาน  OPD Pharmacy
+506759 ศิริพร สุขรา  OPD Pharmacy
+013493 รัตยา แลแว  OPD Pharmacy
+521505 สุภาวดี นิ่มดำ  Ward 10
+612573 ฟูฎัยลา บอตอ  Ward 10
+582078 นูรีสัน พงศ์ประยุทธิ์  Ward 10
+512895 ปิณฑิษา พรมดี  Ward 10
+506293 จารุณี ศักดิ์แก้ว  Ward 10
+510490 สุลาวัลย์ มากมณี  Gastroenterology
+021981 อาอีฉ๊ะ โม่งหมัน  Gastroenterology
+517984 วรรณนิษา ผลเจริญ  Gastroenterology
+510156 สุจิตรา หิรัญวิริยะ  Gastroenterology
+513336 ซูซานา มะ  Gastroenterology
+071164 ทิฆัมพร มีวันเนือง  Gastroenterology
+507412 ชวิศา แก้วนพรัตน์  Gastroenterology
+507108 วรรณนิสา ชายสุทธิ์  Gastroenterology
+070989 นฤมล ยาการียา  Gastroenterology
+518003 อลิสา รุ่งเรืองสำราญกุล  Gastroenterology
+515773 นภาลัย คงปัญญา  Minimal Invasive&Laparoscopic
+070999 รัตติยา เรืองเกียรติกุล  Minimal Invasive&Laparoscopic
+070086 รุ่งนภา แสงสวัสดิ์  Minimal Invasive&Laparoscopic
+622763 มัลลิกา โตสิน  Oncology
+503826 รสนา มาลินี  Dermatology
+070811 จิรภา จันทร์หอม  Pediatrics
+070836 กัญญ์ณพัชญ์ ชายเพ็ชรแก้ว  Pediatrics
+608920 รัยมี สะหีม  Cardiac Cath Lab
+070541 สุเพ็ญศรี สมเลศ  Cardiac Cath Lab
+071198 ศุภชัย ธรรมมิกะกูล  Emergency Services
+051129 อาภัสสรา เตชชินศรี  Heart Clinic
+070079 โสภา ทองแก้ว  Heart Clinic
+071161 รินรดา อิเบ็ญหมาน  Heart Clinic
+502285 พรพิมล ใจทน  Heart Clinic
+592458 ศหยามล เส็นทอง  Heart Clinic
+510158 แก้วกานต์ ชัยสงคราม  Heart Clinic
+070670 วารินทร์ ประสมพงศ์  Heart Clinic
+506948 จิรัสย์วดี จอมพงศ์  Heart Clinic
+516879 จิตติรัตน์ บุญทัสโร  Heart Clinic
+594706 ฟิรดาว ใจเย็น  Heart Clinic
+510159 โชติกา ไชยพรม  Heart Clinic
+516161 นราทิพย์ โลกธรรมรักษ์  Heart Clinic
+070366 วาสินี ฮูลูสาแล๊ะ  Heart Clinic
+051591 ธนพร ชูศิริ  Heart Clinic
+593891 นูรีซา รักพินิจ  Heart Clinic
+602940 สุนิตา ทิ้งปากถ้ำ  Ear Nose Throat
+533963 ธิดาวรรณ สีตะพงศ์  Ear Nose Throat
+505478 พลอยไพลิน ชนะภัย  Eye Center
+603731 ฟาตีมะฮ์ ระหัด  Eye Center
+523025 ไซหนาบ ตามาต  Medical&Inventory Supply Chain
+603733 ชญานี จันมิตร  Registration
+605093 ชลสวัสดิ์ ระวิวรรณ์  Registration
+513682 นิชาภา รัษฎาเพ็ชร  Registration
+603162 มุขสุดา อ้วนเส้ง  Registration
+515580 ดนิตา โยมทรัพย์  Registration
+503049 ดวงพร ศรีวรุทัย  Registration
+523993 จันทร์จิรา หมื่นพล  Pediatrics
+512566 อามาลีน่า บินบอสอ  Pediatrics
+530417 ปารวีร์ ดวงสุวรรณ  Pediatrics
+190275 ปาณิสรา มากเกื้อหนุน  Pediatrics
+091787 นิตยา เปาะเลาะ  Pediatrics
+596870 ศิรดา ชูแก้ว  Pediatrics
+506552 ซูไฮลา แวดอเล๊าะ  Pediatrics
+710472 จุฑารัตน์ สว่างอารมณ์  Pediatrics
+507237 วราภรณ์ ทองรมย์  Pediatrics
+552091 จารีตา เด่นดารา  Pediatrics
+535600 ใหมสุรี บินล่าเต๊ะ  Pediatrics
+070364 นิพนธ์ เทพยา  Cardiac Cath Lab
+594231 เรืองอุไร ทุมชะ  Cardiac Cath Lab
+070579 เสาวนุช ชุมพงศ์  Cardiac Cath Lab
+610025 อิบรอฮีม หัสเหล็ม  Cardiac Cath Lab
+546884 กัญญาภัทร พันธ์ดวง  Cardiac Cath Lab
+621543 ทักษพร อุณาตระการ  Cardiac Cath Lab
+619325 ขนิษฐา แซ่ม่ง  Cardiac Cath Lab
+619324 สกุลรัตน์ วงศ์ชนะ  Cardiac Cath Lab
+583237 โซฟีญา ปักสิน  Intensive Care Unit
+581584 วรวิทย์ หะยีแสนูสี  Intensive Care Unit
+617122 ษานีราร์ และเด็ง  Operating Room
+504475 อัจฉรา ฤทธิศักดิ์  Operating Room
+526983 วิภาดา มณีโชติ  Ear Nose Throat
+070593 กฤติกา วงศ์ชนะ  Ear Nose Throat
+071233 ฐิติมา ชีวะอิสระกุล  Ear Nose Throat
+070835 กานดา สาริปา  Intensive Care Unit
+596195 มาดีนา หมั่นสนิท  Intensive Care Unit
+590263 ฮานีฟะฮ์ กียะ  Intensive Care Unit
+584683 กัลยาณี วงค์ชนะ  Intensive Care Unit
+509337 พรทิพย์ สุวรรณมณี  Intensive Care Unit
+012148 มาหามะซือมิง หะยีมะเด็ง  Intensive Care Unit
+070737 นารีกานต์ อิสระวิชา  Intensive Care Unit
+071224 ไหวย๊ะ หมานอินทร์  Intensive Care Unit
+513332 จุฬาลักษณ์ คงทอง  Intensive Care Unit
+598525 หยาดพิรุณ ปานแก้ว  Intensive Care Unit
+620047 นุชธิดา ยะปา  Intensive Care Unit
+051172 รัตติยา ไชยแก้ว  Intensive Care Unit
+071011 ปรีดา เพชรมณี  Intensive Care Unit
+071288 สุนิศา ทองพิจิตร  Intensive Care Unit
+508395 กนกวรรณ นกเกษม  Intensive Care Unit
+510681 ซีตีฟาตีเมาะ เม็ดมะหะหมัดนุช  Intensive Care Unit
+510693 ธันยพร สุนสระบุตร  Intensive Care Unit
+543633 มารีนา ดอเสาะ  Intensive Care Unit
+070391 พรหมจักร ขอค้า  Intensive Care Unit
+592867 วรัญญา มรรคาเขต  Intensive Care Unit
+190045 ซอมะ ดือเระ  Cardiac Cath Lab (Outreach Pattani)
+573498 นิยตา เกิดเมฆ  Ward 8
+580414 สริตา เจะมะ  Ward 8
+576794 กัลยาณิน นันทชัยพิทักษ์  Ward 8
+581025 ศศิชา ไทรทอง  Ward 8
+582075 อรอุมา คงพุ่ม  Ward 8
+620019 นภัสวรรย์ ปาโต  Ward 8
+614770 พิทยา รอดสุวรรณ  Ward 8
+511749 สมฤดี ทองเรือง  Ward 11
+603536 อรณิชา เหล่าแก้ว  Ward 11
+611932 อารยา อาดำ  Ward 11
+574719 กนกวรรณ พงษ์สุวรรณ  Ward 11
+551393 มารีซา บิลสัน  Ward 11
+545656 ดัสมี หวังเร๊ะ  Ward 11
+510154 พุฒิตา เรืองรักษ์  Ward 11
+503615 ทธันย์อร แสงมณี  Ward 11
+616152 ศุภาวรรณ วิเชียรวงค์  Ward 11
+620021 เฌอดารินญ์ วราศิริรัศมิ์  Ward 11
+547632 อารยา บ่าวเบ็ญหมัด  Ward 11
+605653 รูมัยยะ สุนันทวงศ์  Ward 8
+051874 วาวาญา เต๊ะหลี  Ward 8
+536856 สมิตานัน หมัดล๊ะ  Ward 8
+606841 นิมายมูน โตะโงะ  Cardiac Cath Lab (Outreach Pattani)
+606831 อัสมี กาเร็ง  Cardiac Cath Lab (Outreach Pattani)
+616153 สูรายดาร์ มะสมัน  Cardiac Cath Lab (Outreach Pattani)
+051246 อาริยะ บัวหลวง  Cardiac Cath Lab (Outreach Pattani)
+516138 ยาวาเฮ เจะมะ  Cardiac Cath Lab (Outreach Pattani)
+514991 รุจิรา ฉัตรวีระโยธิน  Medical Record
+513679 ปริณญดา แสงฉาย  Medical Record
+070315 รสิตา เรืองมณี  Medical Record
+528661 พิจิตรา พุกพบสุข  Medical Record
+070996 ชนัณชิดา สุวรรณคง  Medical Record
+581704 ปิยะฉัตร หงษ์สิทธี  Medical Record
+070525 นูรียะ มุตรา  Medical Record
+070449 ธนพร แดงงาม  Medical Record
+070390 รัษฎาภรณ์ ดวงจันทร์  Medical Record
+070444 มัลลิกา หลักเมือง  Medical Record
+527068 สุไนนะ เฮาะเด็ง  Cardiac Cath Lab (Outreach Pattani)
+505760 พัชรพรรณ มณีไชย  Outreach clinic
+583245 ศุภิสรา มุ่งหมาย  Outreach clinic
+599168 ฟารีดา การี  Tele Nursing & Screening
+070322 สิริมน แสงสว่าง  Tele Nursing & Screening
+070792 กชพรรณ เส้งสีแดง  Tele Nursing & Screening
+070893 จิตรา เกิดเอียด  Tele Nursing & Screening
+619332 ภัชลภา เชิญวัฒนชัย  Outreach Clinic (Khaorupchang)
+071212 ซูซาน่า เส็นบัตร  Outreach Clinic (Khaorupchang)
+508030 ชนัญชิดา วงศ์ทอง  Obstetrics & Gynecology
+071150 ภชสร สังศิลปเลิศ  Obstetrics & Gynecology
+512569 นิอานูรา ฮายีอาซัน  Obstetrics & Gynecology
+070265 ปัทมา นุ่นโย  Obstetrics & Gynecology
+070916 ธมลธร หน่อสกูล  Obstetrics & Gynecology
+070994 ณาตยา ปิ่นกาญจน์  Obstetrics & Gynecology
+071284 วิรัชนี จันทะคะโร  Obstetrics & Gynecology
+517213 สุดารัตน์ จิตจันทร์  Breast Clinic
+603540 ภัทรษา พิมพ์สาร  Ward 11
+560467 ณิชกานต์ ชูพยันต์  Ward 11
+502492 ภัทรพร สุขศักดิ์  Eye Center
+071258 ญาดา เพชรเจริญ  Eye Center
+616883 อาสีหย๊ะ หลีเหร็ม  Eye Center
+527799 กัญธนัช จิระนาวาเดช  Eye Center
+620017 เสาวรส มีเนียม  Ward 8
+592464 ปัทวีย์ โอชะติน  Ward 8
+614321 นิศาชล ชูเจริญ  Ward 8
+549908 จันทิมา วงศ์ชนะ  Ward 8
+509022 รัตนา ขุนเศษ  Ward 8
+514341 หทัยรัตน์ ปานทอง  Ward 8
+071213 สวรรยา บุญนิตย์  Ward 8
+070107 ชุติกัณณ์ แสงอุทัย  Ward 8
+517804 ยอแสง ยาอีด  Ward 8
+516164 นรินทร ปานแตง  Ward 8
+583242 รัศมิ์ธญา ประดิษฐ์ถาวรกุล  Ward 8
+071086 จันทร์จิรา ชัยศรี  Ward 8
+610695 อารอฟะห์ กาเจ  Ward 8
+577767 นราภรณ์ แสงทอง  Ward 8
+070248 ปราณี อินทมะโน  Ward 8
+573322 อรอนงค์ เอี่ยมสอาด  Ward 8
+070218 สริยา แก้วคงฤทธิ์  Registration
+071045 รัชดาภรณ์ จันทรัตน์  Registration
+070939 วนิฐา สนิทมัจโร  Registration
+070889 วิชญาภรณ์ เพชรสุข  Outreach clinic
+602623 นภสร ทองเพชร  Reception
+603668 กนกพร ทองจารึก  Reception
+604374 นันท์นลิน เทพฉิม  Reception
+604375 ปิยภัทร์ เลื่อนลอย  Reception
+592345 ณัฏฐา สุวราช  Engineering`;
+
+    const tabWheel = document.getElementById('tabWheel');
+    const tabNames = document.getElementById('tabNames');
+    const wheelTab = document.getElementById('wheel');
+    const namesTab = document.getElementById('names');
+
+    const canvas = document.getElementById('wheelCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const spinBtn = document.getElementById('spinBtn');
+    const peekBtn = document.getElementById('peekBtn');
+    const resetAngleBtn = document.getElementById('resetAngleBtn');
+
+    const statusMain = document.getElementById('statusMain');
+    const statusSub = document.getElementById('statusSub');
+    const pillCount = document.getElementById('pillCount');
+
+    const textarea = document.getElementById('nameList');
+    const loadBtn = document.getElementById('loadBtn');
+    const clearAllBtn = document.getElementById('clearAllBtn');
+    const filePick = document.getElementById('filePick');
+    const exportXlsxBtn = document.getElementById('exportXlsxBtn');
+
+    const participantsCountEl = document.getElementById('participantsCount');
+    const winnersCountEl = document.getElementById('winnersCount');
+    const participantsListEl = document.getElementById('participantsList');
+    const winnersListEl = document.getElementById('winnersList');
+    const participantsMoreEl = document.getElementById('participantsMore');
+    const winnersMoreEl = document.getElementById('winnersMore');
+
+    const overlay = document.getElementById('overlay');
+    const winnerNameEl = document.getElementById('winnerName');
+
+    const lastWinnerText = document.getElementById('lastWinnerText');
+    const lastWinnerMeta = document.getElementById('lastWinnerMeta');
+
+    const fxCanvas = document.getElementById('fxCanvas');
+    const fxCtx = fxCanvas.getContext('2d');
+
+    const brandLogoImg = document.getElementById('brandLogoImg');
+
+    // เปลี่ยน key เพื่อให้เปิดไฟล์ใหม่แล้วใช้ Default จาก Excel (ไม่ชนกับเวอร์ชันก่อน)
+    const STORAGE_KEY = 'bhh_spinwheel_state_v6_defaultFromExcel';
+
+    const TAU = Math.PI * 2;
+    const POINTER_ANGLE = -Math.PI / 2; // top (12 o'clock)
+
+    let participants = [];
+    let winners = [];
+    let currentAngle = 0;
+    let spinning = false;
+
+    const wheelBase = document.createElement('canvas');
+    const wheelBaseCtx = wheelBase.getContext('2d');
+
+    const PASTEL_THRESHOLD = 300;
+
+    function clamp(n,a,b){ return Math.max(a, Math.min(b, n)); }
+    function normAngle(a){ a%=TAU; return a<0? a+TAU : a; }
+
+    function getCssVar(name){
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+    function hexToRgb(hex){
+      const h = hex.replace('#','').trim();
+      if (h.length !== 6) return [30,55,107];
+      return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
+    }
+    function rgbToHsl(r,g,b){
+      r/=255; g/=255; b/=255;
+      const max=Math.max(r,g,b), min=Math.min(r,g,b);
+      let h=0, s=0, l=(max+min)/2;
+      if (max!==min){
+        const d=max-min;
+        s = l>0.5 ? d/(2-max-min) : d/(max+min);
+        switch(max){
+          case r: h = (g-b)/d + (g<b?6:0); break;
+          case g: h = (b-r)/d + 2; break;
+          case b: h = (r-g)/d + 4; break;
+        }
+        h*=60;
+      }
+      return [h, s*100, l*100];
+    }
+    function hueLerp(a,b,t){
+      let d = ((b - a + 540) % 360) - 180;
+      return (a + d*t + 360) % 360;
+    }
+    function hash01(i){
+      let x = (i + 1) * 2654435761;
+      x ^= x << 13; x ^= x >>> 17; x ^= x << 5;
+      return ((x >>> 0) / 0x100000000);
+    }
+    function lerp(a,b,t){ return a + (b-a)*t; }
+
+    function wheelSegmentColor(i, total){
+      const primaryHex = getCssVar('--brand-primary') || '#1E376B';
+      const accentHex  = getCssVar('--brand-accent')  || '#AA1F2B';
+      const [ph] = rgbToHsl(...hexToRgb(primaryHex));
+      const [ah] = rgbToHsl(...hexToRgb(accentHex));
+
+      if (total < PASTEL_THRESHOLD){
+        const t = total <= 1 ? 0 : i / (total - 1);
+        const wobble = 8 * Math.sin((i / Math.max(1,total)) * TAU * 3);
+        const hue = (hueLerp(ph, ah, t) + wobble + 360) % 360;
+        return `hsl(${hue} 78% 56%)`;
+      }
+
+      const phi = 0.6180339887;
+      const t = (i * phi) % 1;
+      const n1 = hash01(i);
+      const n2 = hash01(i*7 + 11);
+
+      const chooseBlue = t < 0.74;
+      const baseHue = chooseBlue ? ph : ah;
+
+      const hueJitter = (n1 - 0.5) * (chooseBlue ? 18 : 14);
+      const hue = (baseHue + hueJitter + 360) % 360;
+
+      const sat = lerp(40, 56, n2);
+      const lit = lerp(76, 86, n1);
+      return `hsl(${hue} ${sat}% ${lit}%)`;
+    }
+
+    function secureRandomInt(max){
+      const range = 0x100000000;
+      const limit = Math.floor(range / max) * max;
+      const buf = new Uint32Array(1);
+      while (true) {
+        crypto.getRandomValues(buf);
+        const x = buf[0];
+        if (x < limit) return x % max;
+      }
+    }
+
+    function saveState(){
+      const payload = { participants, winners, currentAngle };
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(payload)); } catch {}
+    }
+    function loadState(){
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return false;
+        const obj = JSON.parse(raw);
+        if (!obj || !Array.isArray(obj.participants) || !Array.isArray(obj.winners)) return false;
+        participants = obj.participants;
+        winners = obj.winners;
+        currentAngle = typeof obj.currentAngle === 'number' ? obj.currentAngle : 0;
+        return true;
+      }catch{ return false; }
+    }
+
+    function switchTab(which){
+      const isWheel = which === 'wheel';
+      tabWheel.classList.toggle('active', isWheel);
+      tabNames.classList.toggle('active', !isWheel);
+      wheelTab.classList.toggle('active', isWheel);
+      namesTab.classList.toggle('active', !isWheel);
+      if (isWheel) requestAnimationFrame(() => { resizeCanvas(); draw(); });
+    }
+    tabWheel.addEventListener('click', () => switchTab('wheel'));
+    tabNames.addEventListener('click', () => switchTab('names'));
+
+    function resizeCanvas(){
+      const wrapper = canvas.closest('.wheel-wrapper');
+      const rect = wrapper.getBoundingClientRect();
+      const sizeCss = Math.floor(Math.min(rect.width, rect.height));
+      const dpr = Math.max(1, Math.min(2.5, window.devicePixelRatio || 1));
+
+      canvas.width = Math.floor(sizeCss * dpr);
+      canvas.height = Math.floor(sizeCss * dpr);
+
+      wheelBase.width = canvas.width;
+      wheelBase.height = canvas.height;
+
+      buildWheelBase();
+    }
+    window.addEventListener('resize', () => { resizeCanvas(); draw(); });
+
+    function ellipsize(str, maxLen){
+      if (str.length <= maxLen) return str;
+      return str.slice(0, Math.max(0, maxLen-1)) + '…';
+    }
+
+    function buildWheelBase(){
+      const w = wheelBase.width, h = wheelBase.height;
+      const cx = w/2, cy = h/2;
+      const radius = Math.min(cx, cy) * 0.94;
+
+      wheelBaseCtx.clearRect(0,0,w,h);
+
+      if (participants.length === 0){
+        wheelBaseCtx.save();
+        wheelBaseCtx.translate(cx, cy);
+
+        wheelBaseCtx.fillStyle = 'rgba(0,0,0,.08)';
+        wheelBaseCtx.beginPath();
+        wheelBaseCtx.arc(0,0,radius,0,TAU);
+        wheelBaseCtx.fill();
+
+        wheelBaseCtx.fillStyle = 'rgba(255,255,255,.86)';
+        wheelBaseCtx.beginPath();
+        wheelBaseCtx.arc(0,0,radius*0.78,0,TAU);
+        wheelBaseCtx.fill();
+
+        wheelBaseCtx.fillStyle = 'rgba(15,23,42,.72)';
+        wheelBaseCtx.font = `950 ${Math.max(14, Math.floor(radius*0.09))}px ui-sans-serif, system-ui`;
+        wheelBaseCtx.textAlign = 'center';
+        wheelBaseCtx.textBaseline = 'middle';
+        wheelBaseCtx.fillText('ยังไม่มีรายชื่อ', 0, -6);
+        wheelBaseCtx.font = `800 ${Math.max(12, Math.floor(radius*0.055))}px ui-sans-serif, system-ui`;
+        wheelBaseCtx.fillText('ไปที่แท็บ “รายชื่อ” เพื่อเพิ่ม', 0, radius*0.14);
+
+        wheelBaseCtx.restore();
+        return;
+      }
+
+      const total = participants.length;
+      const anglePer = TAU / total;
+
+      const minAngleForFullLabels = 0.20;
+      const showEvery =
+        anglePer >= minAngleForFullLabels ? 1 :
+        anglePer >= 0.12 ? 2 :
+        anglePer >= 0.08 ? 3 :
+        anglePer >= 0.05 ? 5 :
+        8;
+
+      const baseFont = clamp(Math.floor(radius * 0.075), 10, 20);
+      const fontSize = clamp(Math.floor(baseFont * (anglePer / minAngleForFullLabels)), 10, baseFont);
+
+      const pastelMode = total >= PASTEL_THRESHOLD;
+      const borderColor = pastelMode ? 'rgba(255,255,255,.62)' : 'rgba(255,255,255,.90)';
+      const borderWidth = pastelMode ? Math.max(1.0, radius * 0.006) : Math.max(1.5, radius * 0.010);
+
+      wheelBaseCtx.save();
+      wheelBaseCtx.translate(cx, cy);
+
+      for (let i=0; i<total; i++){
+        const start = i * anglePer;
+        const end = start + anglePer;
+
+        wheelBaseCtx.beginPath();
+        wheelBaseCtx.moveTo(0,0);
+        wheelBaseCtx.arc(0,0,radius,start,end);
+        wheelBaseCtx.closePath();
+        wheelBaseCtx.fillStyle = wheelSegmentColor(i, total);
+        wheelBaseCtx.fill();
+
+        wheelBaseCtx.strokeStyle = borderColor;
+        wheelBaseCtx.lineWidth = borderWidth;
+        wheelBaseCtx.stroke();
+
+        if (i % showEvery === 0){
+          const mid = start + anglePer/2;
+          wheelBaseCtx.save();
+          wheelBaseCtx.rotate(mid);
+
+          wheelBaseCtx.font = `950 ${fontSize}px ui-sans-serif, system-ui`;
+          wheelBaseCtx.textAlign = 'left';
+          wheelBaseCtx.textBaseline = 'middle';
+
+          const raw = participants[i];
+          const maxChars = clamp(Math.floor((anglePer * radius) / (fontSize * 0.62)), 4, 18);
+          const label = ellipsize(raw, maxChars);
+
+          const rText = radius * 0.63;
+
+          wheelBaseCtx.fillStyle = pastelMode ? 'rgba(255,255,255,.82)' : 'rgba(255,255,255,.64)';
+          wheelBaseCtx.fillText(label, rText + 1.5, 1.5);
+
+          wheelBaseCtx.fillStyle = 'rgba(17,24,39,.92)';
+          wheelBaseCtx.fillText(label, rText, 0);
+
+          wheelBaseCtx.restore();
+        }
+      }
+
+      wheelBaseCtx.save();
+      wheelBaseCtx.beginPath();
+      wheelBaseCtx.arc(0,0,radius*0.18,0,TAU);
+      wheelBaseCtx.fillStyle = 'rgba(255,255,255,.94)';
+      wheelBaseCtx.fill();
+      wheelBaseCtx.lineWidth = radius * 0.02;
+      wheelBaseCtx.strokeStyle = 'rgba(0,0,0,.08)';
+      wheelBaseCtx.stroke();
+
+      wheelBaseCtx.beginPath();
+      wheelBaseCtx.arc(0,0,radius*0.05,0,TAU);
+      wheelBaseCtx.fillStyle = 'rgba(255,255,255,.96)';
+      wheelBaseCtx.fill();
+
+      wheelBaseCtx.restore();
+      wheelBaseCtx.restore();
+    }
+
+    function draw(){
+      const w = canvas.width, h = canvas.height;
+      const cx = w/2, cy = h/2;
+
+      ctx.clearRect(0,0,w,h);
+
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(currentAngle);
+      ctx.drawImage(wheelBase, -cx, -cy);
+      ctx.restore();
+
+      ctx.save();
+      const radius = Math.min(cx,cy) * 0.94;
+      ctx.translate(cx, cy);
+      const grad = ctx.createRadialGradient(-radius*0.25, -radius*0.35, radius*0.15, 0, 0, radius);
+      grad.addColorStop(0, 'rgba(255,255,255,.55)');
+      grad.addColorStop(0.45, 'rgba(255,255,255,.12)');
+      grad.addColorStop(1, 'rgba(0,0,0,.10)');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(0,0,radius,0,TAU);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function getIndexAtPointer(){
+      if (participants.length === 0) return -1;
+      const anglePer = TAU / participants.length;
+      const a = normAngle(POINTER_ANGLE - currentAngle);
+      const idx = Math.floor((a + 1e-12) / anglePer);
+      return clamp(idx, 0, participants.length - 1);
+    }
+    function nameAtPointer(){
+      const idx = getIndexAtPointer();
+      return idx < 0 ? null : participants[idx];
+    }
+
+    function renderList(ul, noteEl, arr, maxShow=220){
+      ul.innerHTML = '';
+      noteEl.textContent = '';
+      const show = arr.slice(0, maxShow);
+      for (const item of show){
+        const li = document.createElement('li');
+        li.textContent = item;
+        ul.appendChild(li);
+      }
+      if (arr.length > maxShow){
+        noteEl.textContent = `แสดง ${maxShow} รายการแรก (ยังมีอีก ${arr.length - maxShow} รายการ)`;
+      }
+    }
+
+    function updateLists(){
+      participantsCountEl.textContent = participants.length;
+      winnersCountEl.textContent = winners.length;
+      pillCount.textContent = `ผู้เข้าร่วม ${participants.length}`;
+
+      renderList(participantsListEl, participantsMoreEl, participants);
+      renderList(winnersListEl, winnersMoreEl, winners);
+
+      if (participants.length === 0){
+        statusMain.textContent = 'ยังไม่มีรายชื่อ';
+        statusSub.textContent = 'ไปที่แท็บ “รายชื่อ” เพื่อเพิ่ม/โหลดรายชื่อ แล้วกลับมาหมุนวงล้อ';
+      } else if (spinning){
+        statusMain.textContent = 'กำลังหมุน...';
+        statusSub.textContent = 'วงล้อจะหยุดด้วย easing แบบ cubic ease-out และผลต้องตรงกับ Pointer';
+      } else {
+        statusMain.textContent = 'พร้อมหมุน!';
+        const peek = nameAtPointer();
+        statusSub.textContent = peek ? `ชื่อที่อยู่ใต้ลูกศรตอนนี้: “${peek}”` : 'คลิกวงล้อหรือกดปุ่ม “หมุนวงล้อ”';
+      }
+
+      spinBtn.disabled = spinning || participants.length === 0;
+      peekBtn.disabled = spinning || participants.length === 0;
+      resetAngleBtn.disabled = spinning;
+
+      exportXlsxBtn.disabled = winners.length === 0;
+
+      saveState();
+    }
+
+    let popupTimer = null;
+    function showWinner(name){
+      winnerNameEl.textContent = `${name}`;
+      overlay.classList.add('show');
+      startFireworks();
+
+      const now = new Date();
+      lastWinnerText.textContent = `🎉 ${name}`;
+      lastWinnerMeta.textContent =
+        `${now.toLocaleDateString('th-TH')} ${now.toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'})}`;
+
+      clearTimeout(popupTimer);
+      popupTimer = setTimeout(() => {
+        overlay.classList.remove('show');
+        stopFireworks();
+      }, 4500);
+    }
+
+    let fxRAF = null;
+    let fxParticles = [];
+    let fxEndAt = 0;
+
+    function fitFxCanvas(){
+      const dpr = Math.max(1, Math.min(2.5, window.devicePixelRatio || 1));
+      fxCanvas.width = Math.floor(window.innerWidth * dpr);
+      fxCanvas.height = Math.floor(window.innerHeight * dpr);
+      fxCanvas.style.width = window.innerWidth + 'px';
+      fxCanvas.style.height = window.innerHeight + 'px';
+      fxCtx.setTransform(dpr,0,0,dpr,0,0);
+    }
+    window.addEventListener('resize', fitFxCanvas);
+
+    function burst(x, y){
+      const primaryHex = getCssVar('--brand-primary') || '#1E376B';
+      const [ph] = rgbToHsl(...hexToRgb(primaryHex));
+
+      const n = 60 + secureRandomInt(40);
+      const baseHue = ph;
+
+      for (let i=0;i<n;i++){
+        const ang = (i / n) * TAU;
+        const spd = 2 + Math.random()*5;
+        const hue = (baseHue + (Math.random()-0.5)*40 + 360) % 360;
+
+        fxParticles.push({
+          x, y,
+          vx: Math.cos(ang)*spd*(0.7 + Math.random()*0.6),
+          vy: Math.sin(ang)*spd*(0.7 + Math.random()*0.6),
+          g: 0.06 + Math.random()*0.05,
+          life: 42 + Math.random()*22,
+          hue,
+          r: 1.2 + Math.random()*1.8
+        });
+      }
+    }
+
+    function startFireworks(){
+      fitFxCanvas();
+      fxCanvas.classList.add('show');
+      fxParticles = [];
+      fxEndAt = performance.now() + 1700;
+
+      const w = window.innerWidth, h = window.innerHeight;
+      burst(w*0.50, h*0.35);
+      burst(w*0.38, h*0.45);
+      burst(w*0.62, h*0.45);
+
+      const tick = (t) => {
+        fxCtx.clearRect(0,0,window.innerWidth, window.innerHeight);
+
+        if (t < fxEndAt && Math.random() < 0.08){
+          burst(w*(0.25 + Math.random()*0.50), h*(0.22 + Math.random()*0.45));
+        }
+
+        for (let i = fxParticles.length - 1; i >= 0; i--){
+          const p = fxParticles[i];
+          p.life -= 1;
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vx *= 0.985;
+          p.vy = p.vy * 0.985 + p.g;
+
+          if (p.life <= 0 || p.y > window.innerHeight + 80){
+            fxParticles.splice(i,1);
+            continue;
+          }
+          const alpha = Math.min(1, p.life / 40);
+          fxCtx.fillStyle = `hsla(${p.hue}, 90%, 60%, ${alpha})`;
+          fxCtx.beginPath();
+          fxCtx.arc(p.x, p.y, p.r, 0, TAU);
+          fxCtx.fill();
+        }
+
+        if (overlay.classList.contains('show') || fxParticles.length > 0){
+          fxRAF = requestAnimationFrame(tick);
+        } else {
+          stopFireworks();
+        }
+      };
+      cancelAnimationFrame(fxRAF);
+      fxRAF = requestAnimationFrame(tick);
+    }
+
+    function stopFireworks(){
+      cancelAnimationFrame(fxRAF);
+      fxRAF = null;
+      fxParticles = [];
+      fxCanvas.classList.remove('show');
+      fxCtx.clearRect(0,0,fxCanvas.width, fxCanvas.height);
+    }
+
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay){
+        overlay.classList.remove('show');
+        stopFireworks();
+      }
+    });
+
+    function spin(){
+      if (spinning || participants.length === 0) return;
+
+      spinning = true;
+      updateLists();
+
+      const n = participants.length;
+      const anglePer = TAU / n;
+
+      const chosenIndex = secureRandomInt(n);
+      const desiredFinal = normAngle(POINTER_ANGLE - (chosenIndex + 0.5) * anglePer);
+
+      const startAngle = currentAngle;
+      const startNorm = normAngle(startAngle);
+      const delta = normAngle(desiredFinal - startNorm);
+
+      const fullSpins = 6 + secureRandomInt(4);
+      const targetAngle = startAngle + fullSpins * TAU + delta;
+
+      const duration = 4200 + secureRandomInt(900);
+      const startTime = performance.now();
+
+      function frame(now){
+        const t = clamp((now - startTime) / duration, 0, 1);
+        const eased = 1 - Math.pow(1 - t, 3);
+
+        currentAngle = startAngle + (targetAngle - startAngle) * eased;
+        draw();
+
+        if (t < 1){
+          requestAnimationFrame(frame);
+          return;
+        }
+
+        currentAngle = desiredFinal;
+        draw();
+
+        const winnerIdx = getIndexAtPointer();
+        const winner = participants.splice(winnerIdx, 1)[0];
+        winners.push(winner);
+
+        buildWheelBase();
+        draw();
+
+        spinning = false;
+        updateLists();
+        showWinner(winner);
+      }
+
+      requestAnimationFrame(frame);
+    }
+
+    function parseNames(text){
+      return text.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+    }
+
+    function loadNamesFromTextarea(){
+      const text = textarea.value.trim();
+      if (!text){
+        alert('กรุณาใส่รายชื่ออย่างน้อย 1 ชื่อ');
+        return;
+      }
+      participants = parseNames(text);
+      winners = [];
+      currentAngle = 0;
+
+      buildWheelBase();
+      draw();
+      updateLists();
+      switchTab('wheel');
+    }
+
+    function clearAll(){
+      if (!confirm('ต้องการล้างรายชื่อและผู้ชนะทั้งหมดใช่หรือไม่?')) return;
+      participants = [];
+      winners = [];
+      currentAngle = 0;
+      textarea.value = '';
+      buildWheelBase();
+      draw();
+      updateLists();
+    }
+
+    filePick.addEventListener('change', async (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      try{
+        textarea.value = await file.text();
+      }catch{
+        alert('ไม่สามารถอ่านไฟล์ได้');
+      }finally{
+        filePick.value = '';
+      }
+    });
+
+    loadBtn.addEventListener('click', loadNamesFromTextarea);
+    clearAllBtn.addEventListener('click', clearAll);
+
+    spinBtn.addEventListener('click', spin);
+    canvas.addEventListener('click', spin);
+
+    peekBtn.addEventListener('click', () => {
+      const nm = nameAtPointer();
+      if (!nm) return;
+      alert(`ชื่อที่อยู่ใต้ลูกศรตอนนี้คือ:\n\n${nm}`);
+      updateLists();
+    });
+
+    resetAngleBtn.addEventListener('click', () => {
+      if (spinning) return;
+      currentAngle = 0;
+      draw();
+      updateLists();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space'){
+        e.preventDefault();
+        spin();
+      }
+    });
+
+    /***************
+     * XLSX Export (OOXML ZIP store)
+     ***************/
+    function xmlEscape(s){
+      return String(s)
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;')
+        .replace(/'/g,'&apos;');
+    }
+    function strToU8(str){ return new TextEncoder().encode(str); }
+    const CRC32_TABLE = (() => {
+      const table = new Uint32Array(256);
+      for (let i=0;i<256;i++){
+        let c = i;
+        for (let k=0;k<8;k++){
+          c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+        }
+        table[i] = c >>> 0;
+      }
+      return table;
+    })();
+    function crc32(u8){
+      let c = 0xFFFFFFFF;
+      for (let i=0;i<u8.length;i++){
+        c = CRC32_TABLE[(c ^ u8[i]) & 0xFF] ^ (c >>> 8);
+      }
+      return (c ^ 0xFFFFFFFF) >>> 0;
+    }
+    function u16LE(n){ return Uint8Array.from([n & 255, (n >>> 8) & 255]); }
+    function u32LE(n){ return Uint8Array.from([n & 255, (n >>> 8) & 255, (n >>> 16) & 255, (n >>> 24) & 255]); }
+    function concatU8(chunks){
+      const total = chunks.reduce((s,a)=>s+a.length,0);
+      const out = new Uint8Array(total);
+      let off = 0;
+      for (const a of chunks){ out.set(a, off); off += a.length; }
+      return out;
+    }
+    function zipStore(files){
+      const localParts = [];
+      const centralParts = [];
+      let offset = 0;
+
+      for (const f of files){
+        const nameBytes = strToU8(f.name);
+        const data = f.data;
+        const crc = crc32(data);
+
+        const localHeader = concatU8([
+          u32LE(0x04034b50),
+          u16LE(20), u16LE(0), u16LE(0),
+          u16LE(0), u16LE(0),
+          u32LE(crc),
+          u32LE(data.length),
+          u32LE(data.length),
+          u16LE(nameBytes.length),
+          u16LE(0),
+          nameBytes
+        ]);
+
+        localParts.push(localHeader, data);
+
+        const centralHeader = concatU8([
+          u32LE(0x02014b50),
+          u16LE(20), u16LE(20),
+          u16LE(0), u16LE(0),
+          u16LE(0), u16LE(0),
+          u32LE(crc),
+          u32LE(data.length),
+          u32LE(data.length),
+          u16LE(nameBytes.length),
+          u16LE(0), u16LE(0),
+          u16LE(0), u16LE(0),
+          u32LE(0),
+          u32LE(offset),
+          nameBytes
+        ]);
+
+        centralParts.push(centralHeader);
+        offset += localHeader.length + data.length;
+      }
+
+      const centralDir = concatU8(centralParts);
+      const centralOffset = offset;
+      const centralSize = centralDir.length;
+
+      const endRecord = concatU8([
+        u32LE(0x06054b50),
+        u16LE(0), u16LE(0),
+        u16LE(files.length), u16LE(files.length),
+        u32LE(centralSize),
+        u32LE(centralOffset),
+        u16LE(0)
+      ]);
+
+      return new Blob([concatU8([...localParts, centralDir, endRecord])], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      });
+    }
+    function buildSheetXml(winnerNames){
+      const rows = [];
+      rows.push(`<row r="1"><c r="A1" t="inlineStr"><is><t>Winner</t></is></c></row>`);
+      for (let i=0;i<winnerNames.length;i++){
+        const r = i + 2;
+        const v = xmlEscape(winnerNames[i] ?? '');
+        rows.push(`<row r="${r}"><c r="A${r}" t="inlineStr"><is><t xml:space="preserve">${v}</t></is></c></row>`);
+      }
+      return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  <cols><col min="1" max="1" width="40" customWidth="1"/></cols>
+  <sheetData>${rows.join('')}</sheetData>
+</worksheet>`;
+    }
+    function exportWinnersXlsx(){
+      if (!winners || winners.length === 0){
+        alert('ยังไม่มีผู้ได้รับรางวัลให้ Export');
+        return;
+      }
+      const now = new Date();
+      const pad = (n)=> String(n).padStart(2,'0');
+      const fileName = `winners_${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}.xlsx`;
+
+      const contentTypes = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+  <Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+  <Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
+</Types>`;
+
+      const rels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
+</Relationships>`;
+
+      const workbook = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+ xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <sheets>
+    <sheet name="Winners" sheetId="1" r:id="rId1"/>
+  </sheets>
+</workbook>`;
+
+      const workbookRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
+  <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+</Relationships>`;
+
+      const styles = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  <fonts count="1"><font><sz val="11"/><color theme="1"/><name val="Calibri"/><family val="2"/></font></fonts>
+  <fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills>
+  <borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>
+  <cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+  <cellXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs>
+  <cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>
+</styleSheet>`;
+
+      const sheet1 = buildSheetXml(winners);
+
+      const files = [
+        { name: '[Content_Types].xml', data: strToU8(contentTypes) },
+        { name: '_rels/.rels', data: strToU8(rels) },
+        { name: 'xl/workbook.xml', data: strToU8(workbook) },
+        { name: 'xl/_rels/workbook.xml.rels', data: strToU8(workbookRels) },
+        { name: 'xl/styles.xml', data: strToU8(styles) },
+        { name: 'xl/worksheets/sheet1.xml', data: strToU8(sheet1) }
+      ];
+
+      const blob = zipStore(files);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+    exportXlsxBtn.addEventListener('click', exportWinnersXlsx);
+
+    function init(){
+      brandLogoImg.src = DEFAULT_LOGO_URL;
+
+      const restored = loadState();
+      if (!restored){
+        textarea.value = DEFAULT_NAMES_TEXT;
+        participants = parseNames(DEFAULT_NAMES_TEXT);
+        winners = [];
+        currentAngle = 0;
+      } else {
+        textarea.value = participants.join('\n');
+      }
+
+      resizeCanvas();
+      buildWheelBase();
+      draw();
+      updateLists();
+    }
+
+    init();
+  </script>
+</body>
+</html>
