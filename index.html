@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="th">
 <head>
@@ -50,7 +49,7 @@
     }
     .brandWrap{ display:flex; align-items:center; gap:12px; min-width:0; }
     .brandLogo{
-      width: 46px; height: 46px;
+      width: 120px; height: 46px;
       border-radius: 12px;
       background: rgba(255,255,255,.88);
       box-shadow: 0 10px 22px rgba(0,0,0,.18);
@@ -428,12 +427,10 @@
       </div>
       <div class="brandText">
         <h1>🎉 วงล้อสุ่มรางวัลปีใหม่ 🎉</h1>
-        <p class="subtitle">Pointer ปลายแหลมชี้ลงเข้าวงล้อ (12 นาฬิกา)</p>
+        <p class="subtitle">BHH STAFF PARTY (RUFFLE DRAW) </p>
       </div>
     </div>
     <div class="meta">
-      <div>Default names: จากไฟล์ Excel แนบ</div>
-      <div>Export: Winners .xlsx</div>
     </div>
   </header>
 
@@ -1650,7 +1647,18 @@
     }
 
     let popupTimer = null;
-    function showWinner(name){
+    
+    function clearLastWinnerUI(){
+      // เคลียร์ผลล่าสุด + ปิด popup/เอฟเฟกต์ (เผื่ออยู่ระหว่างแสดงผล)
+      lastWinnerText.textContent = '—';
+      lastWinnerMeta.textContent = 'ยังไม่มี';
+      overlay.classList.remove('show');
+      stopFireworks();
+      clearTimeout(popupTimer);
+      popupTimer = null;
+    }
+
+function showWinner(name){
       winnerNameEl.textContent = `${name}`;
       overlay.classList.add('show');
       startFireworks();
@@ -1833,6 +1841,8 @@
       winners = [];
       currentAngle = 0;
 
+      clearLastWinnerUI();
+
       buildWheelBase();
       draw();
       updateLists();
@@ -1844,6 +1854,7 @@
       participants = [];
       winners = [];
       currentAngle = 0;
+      clearLastWinnerUI();
       textarea.value = '';
       buildWheelBase();
       draw();
@@ -2086,6 +2097,16 @@
         textarea.value = participants.join('\n');
       }
 
+      // แสดงผลล่าสุดจาก session ก่อนหน้า (ถ้ามี) หรือเคลียร์ให้ว่าง
+      if (Array.isArray(winners) && winners.length > 0){
+        lastWinnerText.textContent = `🎉 ${winners[winners.length - 1]}`;
+        lastWinnerMeta.textContent = 'จากครั้งก่อนหน้า';
+      } else {
+        // เคลียร์ให้ว่าง (ในกรณีไม่มีผู้ชนะใน session นี้)
+        lastWinnerText.textContent = '—';
+        lastWinnerMeta.textContent = 'ยังไม่มี';
+      }
+
       resizeCanvas();
       buildWheelBase();
       draw();
@@ -2096,3 +2117,4 @@
   </script>
 </body>
 </html>
+
